@@ -1,0 +1,9 @@
+/build/
+/.vs/
+/fonts/*.ttf
+/fonts/OFL.txt
+*.obj
+*.pdb
+*.ilk
+*.exe
+*.dll
