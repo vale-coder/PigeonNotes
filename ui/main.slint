@@ -1,0 +1,109 @@
+import { LineEdit, TextEdit, ScrollView } from "std-widgets.slint";
+import "../fonts/Manrope.ttf";
+
+export component AppWindow inherits Window {
+    title: "Pigeon Notes";
+    preferred-width: 1080px;
+    preferred-height: 700px;
+    min-width: 760px;
+    min-height: 500px;
+    default-font-family: "Manrope";
+    default-font-size: 14px;
+    default-font-weight: 400;
+
+    in-out property <bool> dark-mode: true;
+    in-out property <bool> has-note: false;
+    in-out property <bool> confirm-delete: false;
+    in-out property <string> note-title: "";
+    in-out property <string> note-body: "";
+    in-out property <string> search-query: "";
+    in-out property <string> status: "Ready";
+    in-out property <int> selected-index: -1;
+    in property <[string]> note-titles;
+    callback create-note();
+    callback select-note(int);
+    callback change-title(string);
+    callback change-body(string);
+    callback delete-note();
+    callback search(string);
+
+    background: root.dark-mode ? #111214 : #E7E4DF;
+    Rectangle {
+        x: 0px; y: 0px; width: 290px; height: parent.height;
+        background: root.dark-mode ? #18191B : #DDDAD4;
+        Rectangle { x: 289px; width: 1px; height: parent.height; background: root.dark-mode ? #303235 : #C5C0B9; }
+        Text { x: 23px; y: 24px; text: "Pigeon Notes"; font-size: 23px; font-weight: 500; color: root.dark-mode ? #F0F0F0 : #2C2D30; }
+        Text { x: 24px; y: 60px; text: "Your workspace"; font-size: 12px; color: root.dark-mode ? #999C9F : #6E7074; }
+        Rectangle {
+            x: 20px; y: 103px; width: 250px; height: 39px; border-radius: 3px;
+            background: root.dark-mode ? #303236 : #D4D0CA;
+            Text { x: 14px; text: "+  New note"; font-size: 14px; font-weight: 500; color: root.dark-mode ? #F0F0F0 : #2C2D30; vertical-alignment: center; }
+            TouchArea { clicked => { root.create-note(); } }
+        }
+        Rectangle {
+            x: 20px; y: 159px; width: 250px; height: 38px; border-radius: 3px;
+            background: root.dark-mode ? #242529 : #EAE6E0;
+            LineEdit {
+                x: 8px; y: 3px; width: parent.width - 16px; height: 32px;
+                placeholder-text: "Search notes";
+                text <=> root.search-query;
+                edited(value) => { root.search(value); }
+            }
+        }
+        Text { x: 22px; y: 218px; text: "NOTES"; font-size: 11px; font-weight: 500; color: root.dark-mode ? #85898D : #77797D; }
+        ScrollView {
+            x: 14px; y: 243px; width: 265px; height: parent.height - 315px;
+            VerticalLayout {
+                spacing: 5px;
+                for item[i] in root.note-titles: Rectangle {
+                    height: 52px; width: 244px; border-radius: 3px;
+                    background: root.selected-index == i ? (root.dark-mode ? #323437 : #CFCAC3) : (root.dark-mode ? #1B1C1F : #E2DED8);
+                    Rectangle { x: 0px; width: 3px; height: parent.height; background: root.selected-index == i ? (root.dark-mode ? #AFB3B9 : #777B80) : (root.dark-mode ? #1B1C1F : #E2DED8); }
+                    Text { x: 12px; width: parent.width - 24px; text: item; overflow: elide; vertical-alignment: center; color: root.dark-mode ? #E8E8E8 : #34363A; font-size: 13px; font-weight: root.selected-index == i ? 500 : 400; }
+                    TouchArea { clicked => { root.select-note(i); } }
+                }
+            }
+        }
+        Text { x: 23px; y: parent.height - 44px; text: "Saved locally  |  No account"; color: root.dark-mode ? #81858B : #70747A; font-size: 11px; }
+    }
+    Text { x: 325px; y: 28px; text: root.has-note ? "Editor" : "All notes"; font-size: 27px; font-weight: 400; color: root.dark-mode ? #EEEEEE : #2C2D30; }
+    Rectangle {
+        x: parent.width - 178px; y: 30px; width: 142px; height: 38px; border-radius: 3px;
+        background: root.dark-mode ? #303236 : #D4D0CA;
+        Text { text: root.dark-mode ? "Soft light" : "Dark mode"; font-size: 13px; font-weight: 500; color: root.dark-mode ? #EDEDED : #2C2D30; horizontal-alignment: center; vertical-alignment: center; }
+        TouchArea { clicked => { root.dark-mode = !root.dark-mode; } }
+    }
+    Rectangle { x: 325px; y: 90px; width: parent.width - 360px; height: 1px; background: root.dark-mode ? #303235 : #C5C0B9; }
+    if root.has-note: Rectangle {
+        x: 324px; y: 119px; width: parent.width - 360px; height: parent.height - 170px; border-radius: 4px;
+        background: root.dark-mode ? #1C1D20 : #F1EEEA;
+        Text { x: 28px; y: 20px; text: "TITLE"; font-size: 11px; font-weight: 500; color: root.dark-mode ? #8B8D92 : #77797D; }
+        LineEdit {
+            x: 22px; y: 46px; width: parent.width - 44px; height: 45px;
+            font-size: 22px;
+            text <=> root.note-title;
+            edited(value) => { root.change-title(value); }
+        }
+        Rectangle { x: 24px; y: 110px; width: parent.width - 48px; height: 1px; background: root.dark-mode ? #37393D : #D0CBC5; }
+        TextEdit {
+            x: 22px; y: 127px; width: parent.width - 44px; height: parent.height - 203px;
+            font-size: 15px;
+            text <=> root.note-body;
+            edited(value) => { root.change-body(value); }
+        }
+        Text { x: 27px; y: parent.height - 48px; text: root.status; font-size: 12px; color: root.dark-mode ? #969A9F : #73767B; }
+        Rectangle {
+            x: parent.width - 110px; y: parent.height - 53px; width: 82px; height: 32px; border-radius: 3px;
+            background: root.confirm-delete ? #6B3434 : (root.dark-mode ? #303236 : #D4D0CA);
+            Text { text: root.confirm-delete ? "Confirm" : "Delete"; font-size: 12px; color: root.confirm-delete ? #F6E4E4 : (root.dark-mode ? #EAEAEA : #303135); horizontal-alignment: center; vertical-alignment: center; }
+            TouchArea { clicked => { if (root.confirm-delete) { root.confirm-delete = false; root.delete-note(); } else { root.confirm-delete = true; } } }
+        }
+    }
+    if !root.has-note: Rectangle {
+        x: 324px; y: 119px; width: parent.width - 360px; height: parent.height - 170px; border-radius: 4px;
+        background: root.dark-mode ? #1C1D20 : #F1EEEA;
+        Text { y: parent.height / 2 - 50px; width: parent.width; text: "A quiet place for your ideas."; horizontal-alignment: center; color: root.dark-mode ? #E8E8E8 : #303135; font-size: 20px; font-weight: 400; }
+        Text { y: parent.height / 2 - 10px; width: parent.width; text: "Select a note or create a new one."; horizontal-alignment: center; color: root.dark-mode ? #969A9F : #77797D; font-size: 13px; }
+    }
+    Text { x: 326px; y: parent.height - 32px; text: "Pigeon Notes  |  Local-first"; font-size: 11px; color: root.dark-mode ? #7F8388 : #77797D; }
+}
